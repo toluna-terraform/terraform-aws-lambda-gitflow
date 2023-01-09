@@ -56,18 +56,18 @@ resource "aws_codepipeline" "codepipeline" {
   stage {
     name = "Pre-Deploy"
     dynamic "action" {
-      for_each = var.pre_codebuild_projects
+      for_each = toset(var.function_list)
       content {
-        name             = action.value
+        name             = action.value.function_name
         category         = "Build"
         owner            = "AWS"
         provider         = "CodeBuild"
         input_artifacts  = ["ci_output"]
         version          = "1"
-        output_artifacts = var.pipeline_type == "dev" ? ["dev_output"] : ["cd_output"]
+        output_artifacts = var.pipeline_type == "dev" ? ["dev_${action.value.function_name}_output"] : ["cd_${action.value.function_name}_output"]
 
         configuration = {
-          ProjectName = action.value
+          ProjectName = "codebuild-pre-${var.app_name}-${var.env_name}"
         }
 
       }

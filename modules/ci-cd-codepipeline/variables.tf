@@ -32,3 +32,7 @@ variable "app_name" {
 
 variable "pipeline_type" {
 }
+
+variable "function_list" {
+  default     = {}
+}

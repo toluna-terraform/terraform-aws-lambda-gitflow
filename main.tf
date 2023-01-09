@@ -14,9 +14,9 @@ module "ci-cd-code-pipeline" {
   s3_bucket                = local.artifacts_bucket_name
   build_codebuild_projects = [module.build.attributes.name]
   post_codebuild_projects  = [module.post.attributes.name]
-  pre_codebuild_projects   = [module.pre.attributes.name]
+  pre_codebuild_projects   = [module.pre.attributes.name ]
   code_deploy_applications = [module.code-deploy.attributes.name]
-
+  function_list            = var.function_list
   depends_on = [
     module.build,
     module.code-deploy,

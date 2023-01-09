@@ -89,6 +89,5 @@ variable "vpc_config" {
 }
 
 variable "function_list" {
-  type        = list(map(string))
   default     = []
 }

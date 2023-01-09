@@ -18,10 +18,10 @@ phases:
   build:
     commands:
       - |
-        echo $${FUNCTION_LIST}
-        for func in $${FUNCTION_LIST[@]}
+        declare -a functions=$${FUNCTION_LIST[@]}
+        for func in $functions
         do
-          echo $${func}
+          echo "$func"
         done
       #- printf '{"ImageURI":"${ECR_REPO_URL}:%s"}' "$FROM_ENV" > imageDetail.json
       #- sed -i -E 's/'${APP_NAME}'-main:.*,/'${APP_NAME}'-main:'$FROM_ENV'",/' tmp_taskdef_temp.json
