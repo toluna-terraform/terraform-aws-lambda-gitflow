@@ -22,10 +22,31 @@ data "aws_iam_policy_document" "codepipeline_assume_role_policy" {
 
 data "aws_iam_policy_document" "codepipeline_role_policy" {
   statement {
+    actions = [
+      "s3:GetObject",
+      "s3:GetObjectVersion",
+      "s3:GetBucketVersioning",
+      "s3:PutObjectAcl",
+      "s3:PutObject"
+    ]
+    resources = ["*"]
+  }
+  statement {
     actions   = ["codestar-connections:UseConnection"]
     resources = ["*"]
   }
-  
+  statement {
+    actions = [
+      "codebuild:*",
+    ]
+    resources = ["*"]
+  }
+  statement {
+    actions = [
+       "codedeploy:*"
+    ]
+    resources = ["*"]
+  }
   statement {
     actions = [
       "iam:*",

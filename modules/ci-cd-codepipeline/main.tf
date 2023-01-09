@@ -1,5 +1,5 @@
 locals {
-  codepipeline_name     = "codepipeline-${var.app_name}-${var.env_name}"
+  codepipeline_name = "codepipeline-${var.app_name}-${var.env_name}"
 }
 
 resource "aws_codepipeline" "codepipeline" {
@@ -22,8 +22,8 @@ resource "aws_codepipeline" "codepipeline" {
       output_artifacts = ["source_output"]
 
       configuration = {
-        S3Bucket = "${var.s3_bucket}"
-        S3ObjectKey = "${var.env_name}/source_artifacts.zip" 
+        S3Bucket             = "${var.s3_bucket}"
+        S3ObjectKey          = "${var.env_name}/source_artifacts.zip"
         PollForSourceChanges = true
       }
     }
@@ -44,7 +44,7 @@ resource "aws_codepipeline" "codepipeline" {
         output_artifacts = ["ci_output"]
 
         configuration = {
-          ProjectName = action.value
+          ProjectName      = action.value
         }
 
       }
@@ -53,7 +53,7 @@ resource "aws_codepipeline" "codepipeline" {
   }
 
 
-    stage {
+  stage {
     name = "Pre-Deploy"
     dynamic "action" {
       for_each = var.pre_codebuild_projects
@@ -83,31 +83,28 @@ resource "aws_codepipeline" "codepipeline" {
         name            = action.value
         category        = "Deploy"
         owner           = "AWS"
-        provider        = "CodeDeployToLambda"
+        provider        = "CodeDeploy"
         input_artifacts = var.pipeline_type == "dev" ? ["dev_output"] : ["cd_output"]
         version         = "1"
         configuration = {
-          ApplicationName = action.value
+          ApplicationName     = action.value
           DeploymentGroupName = "lambda-deploy-group-${var.env_name}"
-          AppSpecTemplateArtifact = var.pipeline_type == "dev" ? "dev_output" : "cd_output"
-          Image1ArtifactName = var.pipeline_type == "dev" ? "dev_output" : "cd_output"
-          Image1ContainerName = "IMAGE1_NAME"
         }
       }
     }
   }
 
-    stage {
+  stage {
     name = "Post-Deploy"
     dynamic "action" {
       for_each = var.post_codebuild_projects
       content {
-        name             = action.value
-        category         = "Build"
-        owner            = "AWS"
-        provider         = "CodeBuild"
-        input_artifacts  = ["source_output"]
-        version          = "1"
+        name            = action.value
+        category        = "Build"
+        owner           = "AWS"
+        provider        = "CodeBuild"
+        input_artifacts = ["source_output"]
+        version         = "1"
 
         configuration = {
           ProjectName = action.value

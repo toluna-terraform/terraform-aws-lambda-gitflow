@@ -4,7 +4,7 @@ locals {
 
 
 resource "aws_codebuild_project" "codebuild" {
-  name          = local.codebuild_name
+  name          = "${local.codebuild_name}"
   description   = "Build spec for ${local.codebuild_name}"
   build_timeout = "120"
   service_role  = aws_iam_role.codebuild_role.arn

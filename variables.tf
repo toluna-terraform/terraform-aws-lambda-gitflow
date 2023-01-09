@@ -32,6 +32,10 @@ variable "ecr_registry_id" {
   type = string
 }
 
+variable "ecr_repo_name" {
+  type = string
+}
+
 variable "source_repository" {
   type = string
 }
@@ -41,12 +45,8 @@ variable "trigger_branch" {
 }
 
 variable "dockerfile_path" {
-  type = string
-}
-
-variable "ecr_repo_name" {
-  type = string
-}
+    type = string
+} 
 
 variable "environment_variables_parameter_store" {
   type = map(string)
@@ -89,6 +89,6 @@ variable "vpc_config" {
 }
 
 variable "function_list" {
-  type    = map(string)
-  default = {}
+  type        = list(map(string))
+  default     = []
 }
