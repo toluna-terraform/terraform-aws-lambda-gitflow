@@ -4,34 +4,44 @@ locals {
   run_tests             = var.run_integration_tests || var.run_stress_tests ? true : false
   function_list = { for key, value in var.function_list :
     key => {
-      key                = value.function_name,
+      function_name      = value.function_name,
       execution_role_arn = value.execution_role_arn,
       handler            = value.handler,
       runtime            = value.runtime,
-      cmd                = try(value.cmd,""),
-      workdir            = try(value.workdir,""),
-      entry_point        = try(value.entry_point,"")
+      cmd                = try(value.cmd, ""),
+      workdir            = try(value.workdir, ""),
+      entry_point        = try(value.entry_point, "")
     }
   }
 }
 
+
+
 resource "aws_lambda_function" "init_lambdas" {
   for_each      = local.function_list
-  function_name = "${each.key}-${var.env_name}"
+  function_name = "${each.value.function_name}-${var.env_name}"
   role          = "${each.value.execution_role_arn}"
-  handler       = "${each.value.handler}"
-  runtime       = "${each.value.runtime}"
-  image_uri     = var.pipeline_type == "dev" ? "${var.ecr_repo_url}:${var.env_name}" : local.image_uri
+  image_uri     = "603106382807.dkr.ecr.us-east-1.amazonaws.com/soa-base:latest" #var.pipeline_type == "dev" ? "${var.ecr_repo_url}:${var.env_name}" : local.image_uri
   image_config {
     command           = each.value.cmd == "" ? ["${each.value.handler}"] : [each.value.cmd]
     entry_point       = each.value.entry_point == "" ? ["${each.value.handler}"] : [each.value.entry_point]
     working_directory = each.value.workdir != "" ? "${each.value.workdir}" : ""
   }
   vpc_config {
-    subnet_ids         = try(var.vpc_config.subnets,[])
-    security_group_ids = try(var.vpc_config.security_group_ids,[])
+    subnet_ids         = try(var.vpc_config.subnets, [])
+    security_group_ids = try(var.vpc_config.security_group_ids, [])
   }
   package_type = "Image"
+}
+
+resource "aws_lambda_alias" "test_lambda_alias" {
+  for_each      = local.function_list
+  name             = "live"
+  function_name    = "${each.value.function_name}-${var.env_name}"
+  function_version = "$LATEST"
+  depends_on = [
+    aws_lambda_function.init_lambdas
+  ]
 }
 
 module "ci-cd-code-pipeline" {
