@@ -18,11 +18,9 @@ phases:
   build:
     commands:
       - |
-        declare -a functions=$${FUNCTION_LIST[@]}
-        for func in $functions
-        do
-          echo "$func"
-        done
+        echo "FUNCTION:::$FUNCTION_NAME, HANDLER:::$HANDLER_NAME"
+        aws lambda update-function-code --function-name $FUNCTION_NAME --image-uri $IMAGE_URI
+        aws lambda publish-version --function-name $FUNCTION_NAME
       #- printf '{"ImageURI":"${ECR_REPO_URL}:%s"}' "$FROM_ENV" > imageDetail.json
       #- sed -i -E 's/'${APP_NAME}'-main:.*,/'${APP_NAME}'-main:'$FROM_ENV'",/' tmp_taskdef_temp.json
       #- export CONTAINER_PORT=$(jq '.containerDefinitions[0].portMappings[0].containerPort' tmp_taskdef_temp.json)

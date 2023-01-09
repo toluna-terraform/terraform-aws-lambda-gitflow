@@ -44,7 +44,7 @@ resource "aws_codepipeline" "codepipeline" {
         output_artifacts = ["ci_output"]
 
         configuration = {
-          ProjectName      = action.value
+          ProjectName = action.value
         }
 
       }
@@ -68,6 +68,21 @@ resource "aws_codepipeline" "codepipeline" {
 
         configuration = {
           ProjectName = "codebuild-pre-${var.app_name}-${var.env_name}"
+          EnvironmentVariables = jsonencode(
+            [
+              {
+                name  = "FUNCTION_NAME"
+                type  = "PLAINTEXT"
+                value = "${action.value.function_name}"
+              },
+              {
+                name  = "HANDLER_NAME"
+                type  = "PLAINTEXT"
+                value = "${action.value.handler}"
+              },
+
+            ]
+          )
         }
 
       }
@@ -78,16 +93,16 @@ resource "aws_codepipeline" "codepipeline" {
   stage {
     name = "Deploy"
     dynamic "action" {
-      for_each = var.code_deploy_applications
+      for_each = toset(var.function_list)
       content {
-        name            = action.value
+        name            = action.value.function_name
         category        = "Deploy"
         owner           = "AWS"
         provider        = "CodeDeploy"
-        input_artifacts = var.pipeline_type == "dev" ? ["dev_output"] : ["cd_output"]
+        input_artifacts = var.pipeline_type == "dev" ? ["dev_${action.value.function_name}_output"] : ["cd_${action.value.function_name}_output"]
         version         = "1"
         configuration = {
-          ApplicationName     = action.value
+          ApplicationName     = action.value.function_name
           DeploymentGroupName = "lambda-deploy-group-${var.env_name}"
         }
       }

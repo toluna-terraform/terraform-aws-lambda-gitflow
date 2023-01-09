@@ -2,8 +2,37 @@ locals {
   image_uri             = "${var.ecr_repo_url}:${var.from_env}"
   artifacts_bucket_name = "s3-codepipeline-${var.app_name}-${var.env_type}"
   run_tests             = var.run_integration_tests || var.run_stress_tests ? true : false
+  function_list = { for key, value in var.function_list :
+    key => {
+      key                = value.function_name,
+      execution_role_arn = value.execution_role_arn,
+      handler            = value.handler,
+      runtime            = value.runtime,
+      cmd                = try(value.cmd,""),
+      workdir            = try(value.workdir,""),
+      entry_point        = try(value.entry_point,"")
+    }
+  }
 }
 
+resource "aws_lambda_function" "init_lambdas" {
+  for_each      = local.function_list
+  function_name = "${each.key}-${var.env_name}"
+  role          = "${each.value.execution_role_arn}"
+  handler       = "${each.value.handler}"
+  runtime       = "${each.value.runtime}"
+  image_uri     = var.pipeline_type == "dev" ? "${var.ecr_repo_url}:${var.env_name}" : local.image_uri
+  image_config {
+    command           = each.value.cmd == "" ? ["${each.value.handler}"] : [each.value.cmd]
+    entry_point       = each.value.entry_point == "" ? ["${each.value.handler}"] : [each.value.entry_point]
+    working_directory = each.value.workdir != "" ? "${each.value.workdir}" : ""
+  }
+  vpc_config {
+    subnet_ids         = try(var.vpc_config.subnets,[])
+    security_group_ids = try(var.vpc_config.security_group_ids,[])
+  }
+  package_type = "Image"
+}
 
 module "ci-cd-code-pipeline" {
   source                   = "./modules/ci-cd-codepipeline"
@@ -14,7 +43,7 @@ module "ci-cd-code-pipeline" {
   s3_bucket                = local.artifacts_bucket_name
   build_codebuild_projects = [module.build.attributes.name]
   post_codebuild_projects  = [module.post.attributes.name]
-  pre_codebuild_projects   = [module.pre.attributes.name ]
+  pre_codebuild_projects   = [module.pre.attributes.name]
   code_deploy_applications = [module.code-deploy.attributes.name]
   function_list            = var.function_list
   depends_on = [
@@ -37,13 +66,13 @@ module "build" {
   environment_variables_parameter_store = var.environment_variables_parameter_store
   vpc_config                            = var.vpc_config
   environment_variables                 = merge(var.environment_variables, { APPSPEC = templatefile("${path.module}/templates/appspec.json.tpl", { APP_NAME = "${var.app_name}", ENV_TYPE = "${var.env_type}", HOOKS = local.run_tests, PIPELINE_TYPE = var.pipeline_type }) }) //TODO: try to replace with file
-  buildspec_file                        = templatefile("buildspec.yml.tpl",
+  buildspec_file = templatefile("buildspec.yml.tpl",
     { APP_NAME             = var.app_name,
       ENV_TYPE             = var.env_type,
       ENV_NAME             = var.env_name,
       PIPELINE_TYPE        = var.pipeline_type,
       IMAGE_URI            = var.pipeline_type == "dev" ? "${var.ecr_repo_url}:${var.env_name}" : local.image_uri,
-      DOCKERFILE_PATH      = var.dockerfile_path, 
+      DOCKERFILE_PATH      = var.dockerfile_path,
       ECR_REPO_URL         = var.ecr_repo_url,
       ECR_REPO_NAME        = var.ecr_repo_name,
       ADO_USER             = data.aws_ssm_parameter.ado_user.value,
@@ -84,6 +113,9 @@ module "pre" {
       ECR_REPO_NAME = var.ecr_repo_name,
       FUNCTION_LIST = var.function_list
   })
+  depends_on = [
+    aws_lambda_function.init_lambdas
+  ]
 }
 
 
