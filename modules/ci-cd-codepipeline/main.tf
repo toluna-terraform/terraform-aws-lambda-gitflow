@@ -96,7 +96,7 @@ resource "aws_codepipeline" "codepipeline" {
         input_artifacts = var.pipeline_type == "dev" ? ["dev_${action.value.function_name}_output"] : ["cd_${action.value.function_name}_output"]
         version         = "1"
         configuration = {
-          ApplicationName     = action.value.function_name
+          ApplicationName     = "lambda-deploy-${var.app_name}-${var.env_name}"
           DeploymentGroupName = "lambda-deploy-group-${var.env_name}"
         }
       }
