@@ -24,10 +24,10 @@ phases:
         TARGET_VERSION=$(aws lambda publish-version --function-name $FUNCTION_NAME-${ENV_NAME} --query 'Version' --output text)
         CURRENT_VERSION=$(echo "$(($TARGET_VERSION-1))")
         echo $APPSPEC > appspec.json
-        cat appspec.json
         sed -i -E 's/<FUNCTION_NAME>/'$FUNCTION_NAME-${ENV_NAME}'/' appspec.json
         sed -i -E 's/<CURRENT_VERSION>/'$CURRENT_VERSION'/' appspec.json
         sed -i -E 's/<TARGET_VERSION>/'$TARGET_VERSION'/' appspec.json
+        cat appspec.json
 
 artifacts:
   files:

@@ -6,11 +6,10 @@ locals {
     key => {
       function_name      = value.function_name,
       execution_role_arn = value.execution_role_arn,
-      handler            = value.handler,
       runtime            = value.runtime,
-      cmd                = try(value.cmd, ""),
+      cmd                = try(value.cmd, []),
       workdir            = try(value.workdir, ""),
-      entry_point        = try(value.entry_point, "")
+      entry_point        = try(value.entry_point, [])
     }
   }
 }
@@ -31,9 +30,9 @@ resource "aws_lambda_function" "init_lambdas" {
   image_uri     = data.external.current_service_image.result.image
   publish       = true
   image_config {
-    command           = each.value.cmd == "" ? ["${each.value.handler}"] : [each.value.cmd]
-    entry_point       = each.value.entry_point == "" ? ["${each.value.handler}"] : [each.value.entry_point]
-    working_directory = each.value.workdir != "" ? "${each.value.workdir}" : ""
+    command           = each.value.cmd
+    entry_point       = each.value.entry_point
+    working_directory = each.value.workdir
   }
   vpc_config {
     subnet_ids         = try(var.vpc_config.subnets, [])
