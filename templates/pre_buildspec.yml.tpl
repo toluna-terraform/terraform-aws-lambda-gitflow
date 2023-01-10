@@ -18,22 +18,19 @@ phases:
   build:
     commands:
       - |
-        echo "FUNCTION:::$FUNCTION_NAME, HANDLER:::$HANDLER_NAME"
+        IMAGE_URI=$(printf "${ECR_REPO_URL}:%s" "$FROM_ENV")
         aws lambda update-function-code --function-name $FUNCTION_NAME --image-uri $IMAGE_URI
-        aws lambda publish-version --function-name $FUNCTION_NAME
-      #- printf '{"ImageURI":"${ECR_REPO_URL}:%s"}' "$FROM_ENV" > imageDetail.json
-      #- sed -i -E 's/'${APP_NAME}'-main:.*,/'${APP_NAME}'-main:'$FROM_ENV'",/' tmp_taskdef_temp.json
-      #- export CONTAINER_PORT=$(jq '.containerDefinitions[0].portMappings[0].containerPort' tmp_taskdef_temp.json)
-      #- jq '.containerDefinitions[0].environment[] |= if .name == "DD_VERSION" then .value = "'$FROM_ENV'" else . end' tmp_taskdef_temp.json > tmp_taskdef_temp_with_version.json
-      #- jq 'del(.revision,.taskDefinitionArn,.status,.compatibilities,.requiresAttributes,.registeredAt,.registeredBy) | .containerDefinitions[0].image="<IMAGE1_NAME>"' tmp_taskdef_temp_with_version.json > taskdef.json
-      #- echo $APPSPEC > appspec.json
-      #- cat appspec.json
-      #- sed -i -E 's/<CONTAINER_PORT>/'$CONTAINER_PORT'/' appspec.json
+        aws lambda wait function-updated --function-name $FUNCTION_NAME
+        TARGET_VERSION=$(aws lambda publish-version --function-name $FUNCTION_NAME --query 'Version' --output text)
+        CURRENT_VERSION=$(echo "$(($LATEST_VERSION-1))")
+        echo $APPSPEC > appspec.json
+        cat appspec.json
+        sed -i -E 's/<FUNCTION_NAME>/'$FUNCTION_NAME'/' appspec.json
+        sed -i -E 's/<CURRENT_VERSION>/'$CURRENT_VERSION'/' appspec.json
+        sed -i -E 's/<TARGET_VERSION>/'$TARGET_VERSION'/' appspec.json
 
 artifacts:
   files:
-    - imageDetail.json
     - appspec.json
-    - taskdef.json
   discard-paths: yes
   

@@ -74,13 +74,7 @@ resource "aws_codepipeline" "codepipeline" {
                 name  = "FUNCTION_NAME"
                 type  = "PLAINTEXT"
                 value = "${action.value.function_name}"
-              },
-              {
-                name  = "HANDLER_NAME"
-                type  = "PLAINTEXT"
-                value = "${action.value.handler}"
-              },
-
+              }
             ]
           )
         }

@@ -15,13 +15,21 @@ locals {
   }
 }
 
-
+data "external" "current_service_image" {
+  program = ["${path.module}/files/get_base_image.sh"]
+  query = {
+    app_name = "${var.app_name}"
+    image_name = "${local.image_uri}"
+    aws_profile = "${var.aws_profile}"
+  }
+}
 
 resource "aws_lambda_function" "init_lambdas" {
   for_each      = local.function_list
   function_name = "${each.value.function_name}-${var.env_name}"
   role          = "${each.value.execution_role_arn}"
-  image_uri     = "603106382807.dkr.ecr.us-east-1.amazonaws.com/soa-base:latest" #var.pipeline_type == "dev" ? "${var.ecr_repo_url}:${var.env_name}" : local.image_uri
+  image_uri     = data.external.current_service_image.result.image
+  publish       = true
   image_config {
     command           = each.value.cmd == "" ? ["${each.value.handler}"] : [each.value.cmd]
     entry_point       = each.value.entry_point == "" ? ["${each.value.handler}"] : [each.value.entry_point]
@@ -38,7 +46,7 @@ resource "aws_lambda_alias" "test_lambda_alias" {
   for_each      = local.function_list
   name             = "live"
   function_name    = "${each.value.function_name}-${var.env_name}"
-  function_version = "$LATEST"
+  function_version = aws_lambda_function.init_lambdas[each.key].version
   depends_on = [
     aws_lambda_function.init_lambdas
   ]

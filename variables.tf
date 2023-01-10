@@ -14,6 +14,10 @@ variable "env_type" {
   type = string
 }
 
+variable "aws_profile" {
+  type = string
+}
+
 variable "run_integration_tests" {
   type    = bool
   default = false
