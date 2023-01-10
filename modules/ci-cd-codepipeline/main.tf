@@ -97,7 +97,7 @@ resource "aws_codepipeline" "codepipeline" {
         version         = "1"
         configuration = {
           ApplicationName     = "lambda-deploy-${var.app_name}-${var.env_name}"
-          DeploymentGroupName = "lambda-deploy-group-${var.env_name}"
+          DeploymentGroupName = "lambda-deploy-group-${var.app_name}-${var.env_name}"
         }
       }
     }
