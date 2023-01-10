@@ -19,13 +19,13 @@ phases:
     commands:
       - |
         IMAGE_URI=$(printf "${ECR_REPO_URL}:%s" "$FROM_ENV")
-        aws lambda update-function-code --function-name $FUNCTION_NAME --image-uri $IMAGE_URI
-        aws lambda wait function-updated --function-name $FUNCTION_NAME
-        TARGET_VERSION=$(aws lambda publish-version --function-name $FUNCTION_NAME --query 'Version' --output text)
-        CURRENT_VERSION=$(echo "$(($LATEST_VERSION-1))")
+        aws lambda update-function-code --function-name $FUNCTION_NAME-${ENV_NAME} --image-uri $IMAGE_URI || exit 1
+        aws lambda wait function-updated --function-name $FUNCTION_NAME-${ENV_NAME}
+        TARGET_VERSION=$(aws lambda publish-version --function-name $FUNCTION_NAME-${ENV_NAME} --query 'Version' --output text)
+        CURRENT_VERSION=$(echo "$(($TARGET_VERSION-1))")
         echo $APPSPEC > appspec.json
         cat appspec.json
-        sed -i -E 's/<FUNCTION_NAME>/'$FUNCTION_NAME'/' appspec.json
+        sed -i -E 's/<FUNCTION_NAME>/'$FUNCTION_NAME-${ENV_NAME}'/' appspec.json
         sed -i -E 's/<CURRENT_VERSION>/'$CURRENT_VERSION'/' appspec.json
         sed -i -E 's/<TARGET_VERSION>/'$TARGET_VERSION'/' appspec.json
 

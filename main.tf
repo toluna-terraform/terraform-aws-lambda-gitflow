@@ -62,7 +62,7 @@ module "ci-cd-code-pipeline" {
   build_codebuild_projects = [module.build.attributes.name]
   post_codebuild_projects  = [module.post.attributes.name]
   pre_codebuild_projects   = [module.pre.attributes.name]
-  code_deploy_applications = [module.code-deploy.attributes.name]
+  code_deploy_applications = [module.code-deploy.attributes[0].name]
   function_list            = var.function_list
   depends_on = [
     module.build,
@@ -108,6 +108,7 @@ module "code-deploy" {
   app_name                         = var.app_name
   s3_bucket                        = "s3-codepipeline-${var.app_name}-${var.env_type}"
   termination_wait_time_in_minutes = var.termination_wait_time_in_minutes
+  function_list                    = local.function_list
 }
 
 

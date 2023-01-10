@@ -17,3 +17,7 @@ variable "s3_bucket" {
 variable "termination_wait_time_in_minutes" {
   default = 120
 }
+
+variable "function_list" {
+  default     = {}
+}
