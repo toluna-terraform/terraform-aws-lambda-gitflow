@@ -19,10 +19,5 @@
             "BeforeAllowTraffic": "${APP_NAME}-${ENV_TYPE}-test-framework-manager"
         },
         %{ endif }
-        %{ if PIPELINE_TYPE != "dev" }
-		{
-            "AfterAllowTraffic": "${APP_NAME}-${ENV_TYPE}-merge-waiter"
-        }
-        %{ endif }
     ]
 }
