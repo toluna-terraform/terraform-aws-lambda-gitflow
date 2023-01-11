@@ -39,6 +39,9 @@ resource "aws_lambda_function" "init_lambdas" {
     security_group_ids = try(var.vpc_config.security_group_ids, [])
   }
   package_type = "Image"
+  depends_on = [
+    null_resource.detach_vpc
+  ]
 }
 
 resource "aws_lambda_alias" "test_lambda_alias" {
@@ -184,7 +187,4 @@ resource "null_resource" "detach_vpc" {
       exit 0
     EOT
   }
-  depends_on = [
-    module.code-pipeline
-  ]
 }
