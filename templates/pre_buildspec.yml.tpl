@@ -10,7 +10,7 @@ phases:
       - PR_NUMBER=$(cat pr.txt)
       - SRC_CHANGED=$(cat src_changed.txt)
       - |
-        IFS=- read ENVIRONMENT COLOR <<< "ENV_NAME"
+        IFS=- read ENVIRONMENT COLOR <<< "${ENV_NAME}"
         aws ssm put-parameter --name /infra/${APP_NAME}-$ENVIRONMENT/merge_details --value  '[]' --type String --overwrite
       - |
         if [ "${PIPELINE_TYPE}" == "cd" ] || [[ "$SRC_CHANGED" == "false" && "${PIPELINE_TYPE}" != "cd" ]]; then
