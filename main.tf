@@ -32,7 +32,7 @@ resource "aws_lambda_function" "init_lambdas" {
   publish       = true
 
   environment {
-     variables = each.value.environment_variables
+     variables = each.value.environment_variables == {} ? {ENV_NAME = "${var.env_name}"} : each.value.environment_variables
   }
 
   image_config {
