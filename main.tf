@@ -10,7 +10,7 @@ locals {
       cmd                   = try(value.cmd, []),
       workdir               = try(value.workdir, ""),
       entry_point           = try(value.entry_point, []),
-      environment_variables = try(value.environment_variables, {FOO = "BAR"})
+      environment_variables = try(value.environment_variables, {FOO = "BAR", FOO2 = "TEST"})
     }
   }
 }
