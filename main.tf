@@ -4,12 +4,13 @@ locals {
   run_tests             = var.run_integration_tests || var.run_stress_tests ? true : false
   function_list = { for key, value in var.function_list :
     key => {
-      function_name      = value.function_name,
-      execution_role_arn = value.execution_role_arn,
-      runtime            = value.runtime,
-      cmd                = try(value.cmd, []),
-      workdir            = try(value.workdir, ""),
-      entry_point        = try(value.entry_point, [])
+      function_name         = value.function_name,
+      execution_role_arn    = value.execution_role_arn,
+      runtime               = value.runtime,
+      cmd                   = try(value.cmd, []),
+      workdir               = try(value.workdir, ""),
+      entry_point           = try(value.entry_point, []),
+      environment_variables = try(value.environment_variables, {})
     }
   }
 }
@@ -17,8 +18,8 @@ locals {
 data "external" "current_service_image" {
   program = ["${path.module}/files/get_base_image.sh"]
   query = {
-    app_name = "${var.app_name}"
-    image_name = "${local.image_uri}"
+    app_name    = "${var.app_name}"
+    image_name  = "${local.image_uri}"
     aws_profile = "${var.aws_profile}"
   }
 }
@@ -50,7 +51,7 @@ resource "aws_lambda_function" "init_lambdas" {
 }
 
 resource "aws_lambda_alias" "test_lambda_alias" {
-  for_each      = local.function_list
+  for_each         = local.function_list
   name             = "live"
   function_name    = "${each.value.function_name}-${var.env_name}"
   function_version = aws_lambda_function.init_lambdas[each.key].version
