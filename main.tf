@@ -32,7 +32,7 @@ resource "aws_lambda_function" "init_lambdas" {
   publish       = true
 
   environment {
-    variables = each.value.environment_variables
+    variables = tomap(each.value.environment_variables)
   }
 
   image_config {
