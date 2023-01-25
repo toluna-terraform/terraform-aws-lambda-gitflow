@@ -29,6 +29,11 @@ resource "aws_lambda_function" "init_lambdas" {
   role          = "${each.value.execution_role_arn}"
   image_uri     = data.external.current_service_image.result.image
   publish       = true
+
+  environment {
+    variables = each.value.environment_variables
+  }
+
   image_config {
     command           = each.value.cmd
     entry_point       = each.value.entry_point
