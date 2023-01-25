@@ -10,7 +10,7 @@ locals {
       cmd                   = try(value.cmd, []),
       workdir               = try(value.workdir, ""),
       entry_point           = try(value.entry_point, []),
-      environment_variables = {FOO = "BAR", FOO_II = "BAR_II"}#try(value.environment_variables, {})
+      environment_variables = tomap({FOO = "BAR", FOO_II = "BAR_II"})#try(value.environment_variables, {})
     }
   }
 }
