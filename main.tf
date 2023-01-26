@@ -11,6 +11,7 @@ locals {
       workdir               = try(value.workdir, ""),
       entry_point           = try(value.entry_point, []),
       environment_variables = try(value.environment_variables, {})
+      timeout = try(value.timeout, 30)
     }
   }
 }
@@ -30,6 +31,7 @@ resource "aws_lambda_function" "init_lambdas" {
   role          = "${each.value.execution_role_arn}"
   image_uri     = data.external.current_service_image.result.image
   publish       = true
+  timeout       = each.value.timeout
 
   environment {
      variables = each.value.environment_variables == {} ? {ENV_NAME = "${var.env_name}"} : each.value.environment_variables
