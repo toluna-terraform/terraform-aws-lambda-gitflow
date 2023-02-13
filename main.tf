@@ -12,7 +12,8 @@ locals {
       entry_point           = try(value.entry_point, []),
       environment_variables = try(value.environment_variables, {})
       tags                  = try(value.tags, {})
-      timeout = try(value.timeout, 30)
+      timeout               = try(value.timeout, 30)
+      memory_size           = value.memory_size
     }
   }
 }
@@ -33,6 +34,7 @@ resource "aws_lambda_function" "init_lambdas" {
   image_uri     = data.external.current_service_image.result.image
   publish       = true
   timeout       = each.value.timeout
+  memory_size   = each.value.memory_size
 
   environment {
      variables = each.value.environment_variables != {} ? each.value.environment_variables : {ENV_NAME = "${var.env_name}"}
