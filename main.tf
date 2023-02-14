@@ -199,7 +199,4 @@ resource "null_resource" "detach_vpc" {
       exit 0
     EOT
   }
-  depends_on = [
-    module.ci-cd-code-pipeline
-  ]
 }
