@@ -18,53 +18,7 @@ locals {
   }
 }
 
-data "external" "current_service_image" {
-  program = ["${path.module}/files/get_base_image.sh"]
-  query = {
-    app_name    = "${var.app_name}"
-    image_name  = "${local.image_uri}"
-    aws_profile = "${var.aws_profile}"
-  }
-}
 
-resource "aws_lambda_function" "init_lambdas" {
-  for_each      = local.function_list
-  function_name = "${each.value.function_name}-${var.env_name}"
-  role          = "${each.value.execution_role_arn}"
-  image_uri     = data.external.current_service_image.result.image
-  publish       = true
-  timeout       = each.value.timeout
-
-  environment {
-     variables = each.value.environment_variables != {} ? each.value.environment_variables : {ENV_NAME = "${var.env_name}"}
-  }
-
-  tags = each.value.tags != {} ? each.value.tags : {}
-
-  image_config {
-    command           = each.value.cmd
-    entry_point       = each.value.entry_point
-    working_directory = each.value.workdir
-  }
-  vpc_config {
-    subnet_ids         = try(var.vpc_config.subnets, [])
-    security_group_ids = try(var.vpc_config.security_group_ids, [])
-  }
-  package_type = "Image"
-  depends_on = [
-    null_resource.detach_vpc
-  ]
-}
-
-resource "aws_lambda_alias" "test_lambda_alias" {
-  for_each         = local.function_list
-  name             = "live"
-  function_name    = "${each.value.function_name}-${var.env_name}"
-  function_version = aws_lambda_function.init_lambdas[each.key].version
-  depends_on = [
-    aws_lambda_function.init_lambdas
-  ]
-}
 
 module "ci-cd-code-pipeline" {
   source                   = "./modules/ci-cd-codepipeline"
@@ -146,9 +100,6 @@ module "pre" {
       ECR_REPO_NAME = var.ecr_repo_name,
       FUNCTION_LIST = var.function_list
   })
-  depends_on = [
-    aws_lambda_function.init_lambdas
-  ]
 }
 
 
