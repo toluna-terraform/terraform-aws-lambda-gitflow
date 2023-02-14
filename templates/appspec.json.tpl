@@ -16,7 +16,7 @@
     "Hooks": [
         %{ if HOOKS }
         {
-            "BeforeAllowTraffic": "${APP_NAME}-${ENV_TYPE}-test-framework-manager"
+            "BeforeAllowTraffic": "${APP_NAME}-${ENV_TYPE}-${HOOK_TYPE}"
         },
         %{ endif }
     ]
