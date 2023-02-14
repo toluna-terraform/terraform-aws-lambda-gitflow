@@ -2,6 +2,7 @@ locals {
   image_uri             = "${var.ecr_repo_url}:${var.from_env}"
   artifacts_bucket_name = "s3-codepipeline-${var.app_name}-${var.env_type}"
   run_tests             = var.run_integration_tests || var.run_stress_tests ? true : false
+  deploy_hooks          = local.run_tests ? "test-framework-manager" : "merge-waiter"
   function_list = { for key, value in var.function_list :
     key => {
       function_name         = value.function_name,
@@ -96,7 +97,7 @@ module "build" {
   privileged_mode                       = true
   environment_variables_parameter_store = var.environment_variables_parameter_store
   vpc_config                            = var.vpc_config
-  environment_variables                 = merge(var.environment_variables, { APPSPEC = templatefile("${path.module}/templates/appspec.json.tpl", { APP_NAME = "${var.app_name}", ENV_TYPE = "${var.env_type}", HOOKS = local.run_tests, PIPELINE_TYPE = var.pipeline_type }) }) //TODO: try to replace with file
+  environment_variables                 = merge(var.environment_variables, { APPSPEC = templatefile("${path.module}/templates/appspec.json.tpl", { APP_NAME = "${var.app_name}", ENV_TYPE = "${var.env_type}", HOOKS = var.pipeline_type != "dev", HOOK_TYPE = local.deploy_hooks ,PIPELINE_TYPE = var.pipeline_type }) })
   buildspec_file = templatefile("buildspec.yml.tpl",
     { APP_NAME             = var.app_name,
       ENV_TYPE             = var.env_type,
