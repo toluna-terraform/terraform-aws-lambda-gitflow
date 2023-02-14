@@ -125,29 +125,3 @@ module "post" {
   })
 }
 
-resource "null_resource" "detach_vpc" {
-  for_each = local.function_list
-  triggers = {
-    function    = "${each.value.function_name}-${var.env_name}",
-    aws_profile = "${var.aws_profile}",
-    env_name    = "${var.env_name}"
-  }
-
-  provisioner "local-exec" {
-    when       = destroy
-    on_failure = continue
-    command    = <<EOT
-      aws lambda update-function-configuration --function-name ${self.triggers.function} --vpc-config 'SubnetIds=[],SecurityGroupIds=[]' --profile ${self.triggers.aws_profile}
-      sleep 30
-      declare -a LAMBDA_VERSIONS=($(aws lambda list-versions-by-function --function-name ${self.triggers.function} --profile ${self.triggers.aws_profile} --query 'Versions[].Version' --output text))
-      for i in "$${LAMBDA_VERSIONS[@]}"
-      do
-        ver=$${i##*( )}
-        ver=$${ver%%*()}
-        echo "echo deleting $ver"
-        aws lambda delete-function --function-name ${self.triggers.function}:$ver --profile ${self.triggers.aws_profile} || aws lambda delete-function --function-name ${self.triggers.function} --profile ${self.triggers.aws_profile} || exit 0
-      done
-      exit 0
-    EOT
-  }
-}
