@@ -6,14 +6,6 @@ locals {
   function_list = { for key, value in var.function_list :
     key => {
       function_name         = value.function_name,
-      execution_role_arn    = value.execution_role_arn,
-      runtime               = value.runtime,
-      cmd                   = try(value.cmd, []),
-      workdir               = try(value.workdir, ""),
-      entry_point           = try(value.entry_point, []),
-      environment_variables = try(value.environment_variables, {})
-      tags                  = try(value.tags, {})
-      timeout = try(value.timeout, 30)
     }
   }
 }
