@@ -24,6 +24,7 @@ data "aws_iam_policy_document" "codebuild_role_policy" {
                 "ssm:*",
                 "lambda:*",
                 "codedeploy:*",
+                "codebuild:*",
                 "sqs:*",
                 "ecs:*",
                 "ecr:*"
