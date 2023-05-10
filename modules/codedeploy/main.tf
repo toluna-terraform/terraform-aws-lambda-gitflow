@@ -8,7 +8,7 @@ resource "aws_codedeploy_deployment_group" "deployment_group" {
   for_each = var.function_list
   app_name               = aws_codedeploy_app.codedeploy_app.name
   deployment_config_name = "CodeDeployDefault.LambdaAllAtOnce"
-  deployment_group_name  = "lambda-dg-${each.value.function_name}-${var.env_name}"
+  deployment_group_name  = "lambda-deploy-group-${each.value.function_name}-${var.env_name}"
   service_role_arn       = aws_iam_role.codedeploy_role.arn
 
   auto_rollback_configuration {
