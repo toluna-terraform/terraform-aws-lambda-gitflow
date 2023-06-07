@@ -15,7 +15,7 @@ data "aws_iam_policy_document" "codepipeline_assume_role_policy" {
     actions = ["sts:AssumeRole"]
     principals {
       type        = "Service"
-      identifiers = ["codepipeline.amazonaws.com", "codedeploy.amazonaws.com", "events.amazonaws.com", "cloudtrail.amazonaws.com"]
+      identifiers = ["codepipeline.amazonaws.com", "codedeploy.amazonaws.com", "events.amazonaws.com"]
     }
   }
 }
@@ -34,12 +34,6 @@ data "aws_iam_policy_document" "codepipeline_role_policy" {
   statement {
     actions = [
       "codepipeline:StartPipelineExecution"
-    ]
-    resources = ["*"]
-  }
-  statement {
-    actions = [
-      "logs:*",
     ]
     resources = ["*"]
   }
