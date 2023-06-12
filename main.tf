@@ -10,14 +10,6 @@ locals {
   }
 }
 
-module "pipeline_trigger" {
-  source     = "./modules/pipeline_trigger"
-  app_name   = var.app_name
-  env_name   = var.env_name
-  env_type   = var.env_type
-  s3_bucket  = local.artifacts_bucket_name
-}
-
 module "ci-cd-code-pipeline" {
   source                   = "./modules/ci-cd-codepipeline"
   env_name                 = var.env_name
@@ -31,7 +23,6 @@ module "ci-cd-code-pipeline" {
   code_deploy_applications = [module.code-deploy.attributes.name]
   function_list            = var.function_list
   depends_on = [
-    module.pipeline_trigger,
     module.build,
     module.code-deploy,
     module.post,
