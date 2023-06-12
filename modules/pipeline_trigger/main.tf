@@ -1,10 +1,3 @@
-# prepare lambda zip file
-data "archive_file" "pipeline_trigger_zip" {
-  type        = "zip"
-  source_file = "${path.module}/lambda/pipeline_trigger.js"
-  output_path = "${path.module}/lambda/lambda.zip"
-}
-
 resource "aws_lambda_function" "pipeline_trigger" {
   filename         = "${path.module}/lambda/lambda.zip"
   function_name    = "${var.app_name}-${var.env_name}-pipeline-trigger"
