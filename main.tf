@@ -55,6 +55,7 @@ module "build" {
       ADO_PASSWORD         = data.aws_ssm_parameter.ado_password.value,
       TEST_REPORT          = var.test_report_group,
       CODE_COVERAGE_REPORT = var.coverage_report_group
+      SOURCE_REPOSITORY = var.source_repository
   })
 }
 
