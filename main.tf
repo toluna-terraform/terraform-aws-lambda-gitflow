@@ -55,7 +55,7 @@ module "build" {
       ADO_PASSWORD         = data.aws_ssm_parameter.ado_password.value,
       TEST_REPORT          = var.test_report_group,
       CODE_COVERAGE_REPORT = var.coverage_report_group
-      SOURCE_REPOSITORY = var.source_repository
+      SOURCE_REPOSITORY    = var.source_repository
   })
 }
 
@@ -112,7 +112,8 @@ module "post" {
       FROM_ENV               = var.from_env,
       APP_NAME               = var.app_name,
       ENV_TYPE               = var.env_type,
-      ENABLE_JIRA_AUTOMATION = var.enable_jira_automation
+      ENABLE_JIRA_AUTOMATION = var.enable_jira_automation,
+      SOURCE_REPOSITORY      = var.source_repository
   })
 }
 
