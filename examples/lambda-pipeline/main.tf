@@ -10,7 +10,7 @@ module "pipeline" {
   trigger_branch         = local.env_vars.pipeline_branch
   pipeline_type          = local.env_vars.pipeline_type
   dockerfile_path        = "service/my-service"
-  enable_jira_automation = var.enable_jira_automation
+  enable_jira_automation = local.enable_jira_automation
 
   # ECR
   ecr_registry_id = data.aws_caller_identity.aws_profile.account_id

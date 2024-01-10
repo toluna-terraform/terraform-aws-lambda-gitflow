@@ -56,7 +56,7 @@ resource "aws_codepipeline" "codepipeline" {
   stage {
     name = "Pre-Deploy"
     dynamic "action" {
-      for_each = toset(var.function_list)
+      for_each = var.function_list
       content {
         name             = action.value.function_name
         category         = "Build"
@@ -87,7 +87,7 @@ resource "aws_codepipeline" "codepipeline" {
   stage {
     name = "Deploy"
     dynamic "action" {
-      for_each = toset(var.function_list)
+      for_each = var.function_list
       content {
         name            = action.value.function_name
         category        = "Deploy"
