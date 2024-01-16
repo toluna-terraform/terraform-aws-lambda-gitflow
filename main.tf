@@ -11,6 +11,9 @@ locals {
   coverage_report_group  = var.coverage_report_group == null ? var.pipeline_config.coverage_report_group : var.coverage_report_group
   image_uri              = var.image_uri == null ? var.pipeline_config.image_uri : var.image_uri
   enable_jira_automation = var.enable_jira_automation == null ? var.pipeline_config.enable_jira_automation : var.enable_jira_automation
+  dockerfile_path        = var.dockerfile_path == null ? "service/${local.app_name}" : var.dockerfile_path
+  source_repository      = var.source_repository == null ? "tolunaengineering/${local.app_name}" : var.source_repository
+  lambda_list            = var.function_list == [] ? var.pipeline_config.lambda_list : var.function_list
   vpc_config = can(var.vpc_config.vpc_id == "not_set") ? merge(
     var.pipeline_config.vpc_config,
     { security_group_ids = var.security_group_ids }
@@ -22,7 +25,9 @@ locals {
   artifacts_bucket_name = "s3-codepipeline-${local.app_name}-${local.env_type}"
   run_tests             = local.run_integration_tests || var.run_stress_tests ? true : false
   deploy_hooks          = local.run_tests ? "test-framework-manager" : "merge-waiter"
-  function_list = { for key, value in var.function_list :
+  
+  
+  function_list = { for key, value in local.lambda_list :
     key => {
       function_name = value.function_name,
     }
@@ -34,13 +39,13 @@ module "ci-cd-code-pipeline" {
   env_name                 = local.env_name
   app_name                 = local.app_name
   pipeline_type            = local.pipeline_type
-  source_repository        = var.source_repository
+  source_repository        = local.source_repository
   s3_bucket                = local.artifacts_bucket_name
   build_codebuild_projects = [module.build.attributes.name]
   post_codebuild_projects  = [module.post.attributes.name]
   pre_codebuild_projects   = [module.pre.attributes.name]
   code_deploy_applications = [module.code-deploy.attributes.name]
-  function_list            = var.function_list
+  function_list            = local.lambda_list
   depends_on = [
     module.build,
     module.code-deploy,
@@ -55,7 +60,7 @@ module "build" {
   env_name                              = local.env_name
   env_type                              = local.env_type
   codebuild_name                        = "build-${local.app_name}"
-  source_repository                     = var.source_repository
+  source_repository                     = local.source_repository
   s3_bucket                             = local.artifacts_bucket_name
   privileged_mode                       = true
   environment_variables_parameter_store = var.environment_variables_parameter_store
@@ -67,7 +72,7 @@ module "build" {
       ENV_NAME             = local.env_name,
       PIPELINE_TYPE        = local.pipeline_type,
       IMAGE_URI            = local.pipeline_type == "dev" ? "${local.ecr_repo_url}:${local.env_name}" : local.image_uri,
-      DOCKERFILE_PATH      = var.dockerfile_path,
+      DOCKERFILE_PATH      = local.dockerfile_path,
       ECR_REPO_URL         = local.ecr_repo_url,
       ECR_REPO_NAME        = local.ecr_repo_name,
       ADO_USER             = data.aws_ssm_parameter.ado_user.value,
@@ -94,7 +99,7 @@ module "pre" {
   env_name                              = local.env_name
   env_type                              = local.env_type
   codebuild_name                        = "pre-${local.app_name}"
-  source_repository                     = var.source_repository
+  source_repository                     = local.source_repository
   s3_bucket                             = "s3-codepipeline-${local.app_name}-${local.env_type}"
   privileged_mode                       = true
   environment_variables_parameter_store = var.environment_variables_parameter_store
@@ -107,7 +112,7 @@ module "pre" {
       FROM_ENV      = local.from_env,
       ECR_REPO_URL  = local.ecr_repo_url,
       ECR_REPO_NAME = local.ecr_repo_name,
-      FUNCTION_LIST = var.function_list
+      FUNCTION_LIST = local.lambda_list
   })
 }
 
@@ -117,7 +122,7 @@ module "post" {
   env_name                              = local.env_name
   env_type                              = local.env_type
   codebuild_name                        = "post-${local.app_name}"
-  source_repository                     = var.source_repository
+  source_repository                     = local.source_repository
   s3_bucket                             = "s3-codepipeline-${local.app_name}-${local.env_type}"
   privileged_mode                       = true
   environment_variables_parameter_store = var.environment_variables_parameter_store

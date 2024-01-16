@@ -135,5 +135,5 @@ variable "security_group_ids" {
 }
 
 variable "function_list" {
-  default = {}
+  default = []
 }
