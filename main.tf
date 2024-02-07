@@ -14,14 +14,6 @@ locals {
   dockerfile_path        = var.dockerfile_path == null ? "service/${local.app_name}" : var.dockerfile_path
   source_repository      = var.source_repository == null ? "tolunaengineering/${local.app_name}" : var.source_repository
   lambda_list            = var.function_list == [] ? var.pipeline_config.lambda_list : var.function_list
-  vpc_config = can(var.vpc_config.vpc_id == "not_set") ? merge(
-    var.pipeline_config.vpc_config,
-    { security_group_ids = var.security_group_ids }
-    ) : var.vpc_config == {} ? merge(
-    { vpc_id = "", subnets = [] }, { security_group_ids = var.security_group_ids }
-    ) : merge(
-    { vpc_id = var.vpc_config.vpc_id, subnets = var.vpc_config.subnets }, { security_group_ids = var.security_group_ids }
-  )
   artifacts_bucket_name = "s3-codepipeline-${local.app_name}-${local.env_type}"
   run_tests             = local.run_integration_tests || var.run_stress_tests ? true : false
   deploy_hooks          = local.run_tests ? "test-framework-manager" : "merge-waiter"
@@ -64,7 +56,6 @@ module "build" {
   s3_bucket                             = local.artifacts_bucket_name
   privileged_mode                       = true
   environment_variables_parameter_store = var.environment_variables_parameter_store
-  vpc_config                            = local.vpc_config
   environment_variables                 = merge(var.environment_variables, { APPSPEC = templatefile("${path.module}/templates/appspec.json.tpl", { APP_NAME = "${local.app_name}", ENV_TYPE = "${local.env_type}", HOOKS = local.pipeline_type != "dev", HOOK_TYPE = local.deploy_hooks, PIPELINE_TYPE = local.pipeline_type }) })
   buildspec_file = templatefile("buildspec.yml.tpl",
     { APP_NAME             = local.app_name,

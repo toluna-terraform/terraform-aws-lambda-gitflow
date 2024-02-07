@@ -1,5 +1,4 @@
 variable "pipeline_config" {
-  #type = map(string)
 }
 
 variable "env_name" {
@@ -120,18 +119,6 @@ variable "enable_jira_automation" {
   description = "flag to indicate if Jira automation is enabled"
   default     = null
   nullable    = true
-}
-
-variable "vpc_config" {
-  default = {
-    vpc_id = "not_set"
-    subnets = []
-  }
-}
-
-variable "security_group_ids" {
-  type    = list(string)
-  default = []
 }
 
 variable "function_list" {
