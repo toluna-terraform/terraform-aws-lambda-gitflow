@@ -22,6 +22,7 @@ module "ci-cd-code-pipeline" {
   pre_codebuild_projects   = [module.pre.attributes.name]
   code_deploy_applications = [module.code-deploy.attributes.name]
   function_list            = var.function_list
+
   depends_on = [
     module.build,
     module.code-deploy,
@@ -89,7 +90,8 @@ module "pre" {
       FROM_ENV      = var.from_env,
       ECR_REPO_URL  = var.ecr_repo_url,
       ECR_REPO_NAME = var.ecr_repo_name,
-      FUNCTION_LIST = var.function_list
+      FUNCTION_LIST = var.function_list,
+      TRIBE_STATE_BUCKET  = "toluna-${var.tribe}-tf-state-data"
   })
 }
 
@@ -114,6 +116,8 @@ module "post" {
       ENV_TYPE               = var.env_type,
       ENABLE_JIRA_AUTOMATION = var.enable_jira_automation,
       SOURCE_REPOSITORY      = var.source_repository
+      TRIBE_STATE_BUCKET  = "toluna-${var.tribe}-tf-state-data"
+      TRIBE_CONFIG_BUCKET  = "toluna-${var.tribe}-tf-config-data"
   })
 }
 

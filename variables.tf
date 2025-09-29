@@ -50,7 +50,7 @@ variable "trigger_branch" {
 
 variable "dockerfile_path" {
     type = string
-} 
+}
 
 variable "environment_variables_parameter_store" {
   type = map(string)
@@ -94,4 +94,8 @@ variable "vpc_config" {
 
 variable "function_list" {
   default     = []
+}
+
+variable "tribe" {
+  type = string
 }
